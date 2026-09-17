@@ -66,6 +66,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    gemini_api_key = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -119,27 +120,40 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# Create database tables within application context
+# Create database tables and perform lightweight auto-migration
 with app.app_context():
     db.create_all()
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        columns = [c["name"] for c in inspector.get_columns("users")]
+        if "gemini_api_key" not in columns:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN gemini_api_key VARCHAR(255)"))
+                conn.commit()
+    except Exception as e:
+        print(f"Schema migration note: {e}")
 
 
 # ==========================================
 # Helper Functions: Financial Analysis & AI
 # ==========================================
 def get_financial_insights(
-    income, total_expenses, category_breakdown, income_sources=None, goals=None
+    income, total_expenses, category_breakdown, income_sources=None, goals=None, user_api_key=None
 ):
     """
-    Generates insights using Gemini AI if configured.
+    Generates insights using Gemini AI if the user supplied their personal API key or if
+    the server has GEMINI_API_KEY configured.
     Otherwise, automatically falls back to the embedded Local Finance Advisor Model
     (Offline AI Engine) which runs locally right out of the box with zero setup.
     """
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = (user_api_key or "").strip() or os.environ.get("GEMINI_API_KEY")
+    is_user_key = bool((user_api_key or "").strip())
 
     # 1. Try Cloud Gemini AI Integration if configured
     if api_key:
         try:
+            genai.configure(api_key=api_key)
             model = genai.GenerativeModel("gemini-1.5-flash")
             goals_summary = [
                 f"{g.name}: ${g.current_amount:.2f} of ${g.target_amount:.2f}"
@@ -163,7 +177,8 @@ def get_financial_insights(
                     if line.strip() and not line.strip().startswith("#")
                 ]
                 if insights:
-                    return insights[:4], "Gemini 1.5 Flash (Cloud AI)"
+                    label = "Gemini 1.5 Flash (Your API Key)" if is_user_key else "Gemini 1.5 Flash (Cloud AI)"
+                    return insights[:4], label
         except Exception as e:
             print(f"Gemini API Error (fallback to local model): {e}")
 
@@ -176,6 +191,7 @@ def get_financial_insights(
         goals=goals,
     )
     return local_insights, "Local Advisor AI (Offline Model)"
+
 
 
 # ==========================================
@@ -328,9 +344,14 @@ def get_dashboard_data():
         for exp in expenses
     ]
 
-    # Generate Insights using Gemini Cloud AI or embedded Local Advisor AI
+    # Generate Insights using Gemini Cloud AI (User Key or Server Key) or embedded Local Advisor AI
     insights, ai_engine = get_financial_insights(
-        total_income, total_expenses, category_breakdown, income_list, goals
+        total_income,
+        total_expenses,
+        category_breakdown,
+        income_list,
+        goals,
+        user_api_key=current_user.gemini_api_key,
     )
 
     return jsonify(
@@ -346,12 +367,53 @@ def get_dashboard_data():
             "goals": goals_data,
             "insights": insights,
             "ai_engine": ai_engine,
+            "has_user_api_key": bool(current_user.gemini_api_key),
+        }
+    )
+
+
+@app.route("/api/user/ai-settings", methods=["GET", "POST"])
+@login_required
+def user_ai_settings():
+    """Retrieve or update personal Gemini API key for the authenticated user."""
+    if request.method == "POST":
+        data = request.get_json() or {}
+        new_key = data.get("api_key", "").strip()
+        if new_key:
+            current_user.gemini_api_key = new_key
+            msg = "Personal Gemini API key saved! AI insights will now use your key."
+        else:
+            current_user.gemini_api_key = None
+            msg = "Personal API key removed. Using built-in Local Advisor AI."
+        db.session.commit()
+        return jsonify(
+            {
+                "success": True,
+                "message": msg,
+                "has_key": bool(current_user.gemini_api_key),
+                "masked_key": f"...{current_user.gemini_api_key[-4:]}"
+                if current_user.gemini_api_key
+                else None,
+            }
+        )
+
+    # GET
+    has_key = bool(current_user.gemini_api_key)
+    masked_key = (
+        f"...{current_user.gemini_api_key[-4:]}" if has_key else None
+    )
+    return jsonify(
+        {
+            "has_key": has_key,
+            "masked_key": masked_key,
+            "server_has_default_key": bool(os.environ.get("GEMINI_API_KEY")),
         }
     )
 
 
 @app.route("/api/income", methods=["POST"])
 @login_required
+
 def add_income():
     """Logs an itemized income entry (salary, freelance, client, etc.)."""
     data = request.get_json() or {}

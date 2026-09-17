@@ -19,10 +19,11 @@ An AI-powered personal financial planning and budgeting platform designed to hel
   - Create and track custom savings targets (e.g., *Emergency Fund*, *New Laptop*, *Vacation*).
   - Visual progress bars showing percentage completion toward target amounts.
   - Interactive contribution modal to quickly allocate savings to active goals.
-- 💡 **Dual Financial Advisory Engine**:
-  - **Embedded Local AI Advisor (Offline & Ready Out of the Box)**: When no Google API key is provided, the platform automatically runs a built-in financial intelligence and Natural Language Generation (NLG) engine ([local_advisor.py](file:///c:/Users/RAJ/Desktop/personal_finance_advisor_bot/local_advisor.py)). It classifies user personas (*Freelancer*, *Student*, *Household Manager*, *Salaried Pro*), analyzes 50/30/20 burn rates, forecasts goal horizons, and generates actionable advice locally without any cloud dependency or downloads.
-  - **Google Gemini Cloud AI (Optional Upgrade)**: When `GEMINI_API_KEY` is provided in `.env`, the system seamlessly upgrades to Google's `gemini-1.5-flash` model for conversational advice.
-  - **Dynamic UI Indicator**: The dashboard automatically displays whether insights are powered by `Local Advisor AI (Offline Model)` or `Gemini 1.5 Flash (Cloud AI)`.
+- 💡 **Dual Financial Advisory Engine & Bring-Your-Own-Key (BYOK)**:
+  - **🔑 User-Owned Gemini API Keys**: When deployed publicly, users can enter their own personal Google Gemini API key directly in the dashboard (`🔑 AI Key` in the navbar). Keys are stored privately in each user's account and used exclusively for their own queries, so the host doesn't need to fund API costs.
+  - **Embedded Local AI Advisor (Offline & Ready Out of the Box)**: When no API key is provided, the platform automatically runs a built-in financial intelligence and Natural Language Generation (NLG) engine ([local_advisor.py](file:///c:/Users/RAJ/Desktop/personal_finance_advisor_bot/local_advisor.py)). It classifies user personas (*Freelancer*, *Student*, *Household Manager*, *Salaried Pro*), analyzes 50/30/20 burn rates, forecasts goal horizons, and generates actionable advice locally without any cloud dependency or downloads.
+  - **Dynamic UI Indicator**: The dashboard automatically displays whether insights are powered by `Local Advisor AI (Offline Model)`, `Gemini 1.5 Flash (Your API Key)`, or `Gemini 1.5 Flash (Cloud AI)`.
+
 - 📊 **Dynamic Visual Analytics**:
   - Responsive single-page dashboard styled with modern CSS Grid and Flexbox.
   - Interactive doughnut chart powered by **Chart.js** displaying real-time spending breakdowns.

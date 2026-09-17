@@ -23,6 +23,9 @@
                     <span class="user-avatar">{{ user.username[0].upper() }}</span>
                     <span class="user-name">{{ user.username }}</span>
                 </div>
+                <button id="openApiKeyModalBtn" class="btn btn-outline" title="Configure Personal Gemini AI Key">
+                    🔑 AI Key
+                </button>
                 <button id="exportCsvBtn" class="btn btn-outline" title="Export monthly summary to CSV">
                     📥 Export CSV
                 </button>
@@ -183,7 +186,10 @@
                 <div class="card insights-card">
                     <div class="card-header-flex">
                         <h2>💡 Financial Insights & Recommendations</h2>
-                        <span id="aiEngineBadge" class="badge badge-local">Local Advisor AI</span>
+                        <div class="ai-badge-group">
+                            <span id="aiEngineBadge" class="badge badge-local">Local Advisor AI</span>
+                            <button id="configureApiKeyBtn" class="btn-text-icon" title="Configure your Gemini API Key">⚙️</button>
+                        </div>
                     </div>
                     <ul id="insightsList">
                         <li>Loading insights...</li>
@@ -239,6 +245,35 @@
                 <button id="cancelContributeBtn" class="btn btn-secondary">Cancel</button>
                 <button id="confirmContributeBtn" class="btn btn-primary">Confirm Contribution</button>
             </div>
+        </div>
+    </div>
+
+    <!-- AI Key Modal -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content card">
+            <h3>🔑 Gemini AI API Key Settings</h3>
+            <p class="text-muted" style="margin-bottom: 0.85rem; font-size: 0.86rem;">
+                Bring your own Google Gemini API key to power cloud financial insights. Your key is stored securely in your private account and is only used for your queries.
+            </p>
+            <div id="apiKeyStatusBox" class="api-key-status-box">
+                <span id="apiKeyStatusText">Checking API key status...</span>
+            </div>
+            <form id="apiKeyForm">
+                <div class="form-group">
+                    <label for="geminiApiKeyInput">Personal Gemini API Key</label>
+                    <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." autocomplete="off">
+                    <small style="display: block; margin-top: 0.35rem; color: var(--text-secondary); font-size: 0.8rem;">
+                        Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">Google AI Studio ↗</a>
+                    </small>
+                </div>
+                <div class="modal-actions" style="justify-content: space-between; align-items: center;">
+                    <button type="button" id="removeApiKeyBtn" class="btn btn-danger btn-sm" style="display: none;">Remove Key</button>
+                    <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+                        <button type="button" id="closeApiKeyModalBtn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Key</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

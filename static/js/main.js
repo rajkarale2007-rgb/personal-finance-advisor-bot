@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmContributeBtn = document.getElementById('confirmContributeBtn');
     const contributeAmountInput = document.getElementById('contributeAmount');
 
+    // AI API Key Modal Elements
+    const openApiKeyModalBtn = document.getElementById('openApiKeyModalBtn');
+    const configureApiKeyBtn = document.getElementById('configureApiKeyBtn');
+    const apiKeyModal = document.getElementById('apiKeyModal');
+    const closeApiKeyModalBtn = document.getElementById('closeApiKeyModalBtn');
+    const apiKeyForm = document.getElementById('apiKeyForm');
+    const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
+    const removeApiKeyBtn = document.getElementById('removeApiKeyBtn');
+    const apiKeyStatusBox = document.getElementById('apiKeyStatusBox');
+
     // Default dates
     const currentDate = new Date();
     const currentYearMonth = currentDate.toISOString().slice(0, 7);
@@ -45,6 +55,119 @@ document.addEventListener('DOMContentLoaded', () => {
             const isHidden = goalForm.style.display === 'none' || !goalForm.style.display;
             goalForm.style.display = isHidden ? 'block' : 'none';
             toggleGoalFormBtn.textContent = isHidden ? '✕ Close' : '+ New Goal';
+        });
+    }
+
+    // AI Key Modal Functions & Event Listeners
+    async function loadApiKeySettings() {
+        if (!apiKeyStatusBox) return;
+        try {
+            const res = await fetch('/api/user/ai-settings');
+            const data = await res.json();
+            if (data.has_key) {
+                apiKeyStatusBox.innerHTML = `
+                    <div style="color: #1d4ed8; font-weight: 600;">
+                        🔑 <strong>Personal Gemini Key Active</strong>: <code>${data.masked_key}</code>
+                    </div>
+                    <div style="margin-top: 4px; color: var(--text-secondary); font-size: 0.82rem;">
+                        Your personal key is currently generating all financial insights.
+                    </div>
+                `;
+                if (removeApiKeyBtn) removeApiKeyBtn.style.display = 'inline-block';
+            } else if (data.server_has_default_key) {
+                apiKeyStatusBox.innerHTML = `
+                    <div style="color: #6d28d9; font-weight: 600;">
+                        ☁️ <strong>Server Default Gemini Key Active</strong>
+                    </div>
+                    <div style="margin-top: 4px; color: var(--text-secondary); font-size: 0.82rem;">
+                        A shared server key is present. You can enter your own key below to override it.
+                    </div>
+                `;
+                if (removeApiKeyBtn) removeApiKeyBtn.style.display = 'none';
+            } else {
+                apiKeyStatusBox.innerHTML = `
+                    <div style="color: #047857; font-weight: 600;">
+                        🌱 <strong>Built-in Offline Model Active</strong>
+                    </div>
+                    <div style="margin-top: 4px; color: var(--text-secondary); font-size: 0.82rem;">
+                        Running with the zero-setup Local Advisor model. Enter your Gemini API key below to enable cloud AI.
+                    </div>
+                `;
+                if (removeApiKeyBtn) removeApiKeyBtn.style.display = 'none';
+            }
+        } catch (e) {
+            console.error('Failed to load AI settings:', e);
+        }
+    }
+
+    function openApiKeyModal() {
+        if (apiKeyModal) {
+            apiKeyModal.classList.add('active');
+            if (geminiApiKeyInput) geminiApiKeyInput.value = '';
+            loadApiKeySettings();
+        }
+    }
+
+    function closeApiKeyModal() {
+        if (apiKeyModal) apiKeyModal.classList.remove('active');
+    }
+
+    if (openApiKeyModalBtn) openApiKeyModalBtn.addEventListener('click', openApiKeyModal);
+    if (configureApiKeyBtn) configureApiKeyBtn.addEventListener('click', openApiKeyModal);
+    if (closeApiKeyModalBtn) closeApiKeyModalBtn.addEventListener('click', closeApiKeyModal);
+
+    if (apiKeyModal) {
+        apiKeyModal.addEventListener('click', (e) => {
+            if (e.target === apiKeyModal) closeApiKeyModal();
+        });
+    }
+
+    if (apiKeyForm) {
+        apiKeyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const key = (geminiApiKeyInput.value || '').trim();
+            if (!key) {
+                alert('Please enter your Gemini API key, or click Cancel.');
+                return;
+            }
+            try {
+                const res = await fetch('/api/user/ai-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: key })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    closeApiKeyModal();
+                    if (monthPicker) loadDashboardData(monthPicker.value);
+                } else {
+                    alert(result.error || 'Failed to save API key');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error connecting to server to save API key.');
+            }
+        });
+    }
+
+    if (removeApiKeyBtn) {
+        removeApiKeyBtn.addEventListener('click', async () => {
+            if (!confirm('Remove your personal Gemini API key and revert to the built-in offline Local Advisor?')) return;
+            try {
+                const res = await fetch('/api/user/ai-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: '' })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    closeApiKeyModal();
+                    if (monthPicker) loadDashboardData(monthPicker.value);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error removing API key.');
+            }
         });
     }
 
@@ -271,7 +394,9 @@ async function loadDashboardData(month) {
         const aiEngineBadge = document.getElementById('aiEngineBadge');
         if (aiEngineBadge && data.ai_engine) {
             aiEngineBadge.textContent = data.ai_engine;
-            if (data.ai_engine.includes('Gemini')) {
+            if (data.ai_engine.includes('Your API Key')) {
+                aiEngineBadge.className = 'badge badge-user-ai';
+            } else if (data.ai_engine.includes('Gemini')) {
                 aiEngineBadge.className = 'badge badge-ai';
             } else {
                 aiEngineBadge.className = 'badge badge-local';
