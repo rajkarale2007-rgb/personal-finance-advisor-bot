@@ -629,15 +629,27 @@ if __name__ == "__main__":
     if use_ngrok:
         try:
             from pyngrok import ngrok
+            # Configure authtoken if present in .env or environment
+            auth_token = os.environ.get("NGROK_AUTHTOKEN")
+            if auth_token:
+                ngrok.set_auth_token(auth_token.strip())
             # Open HTTP tunnel on port 5000
             public_url = ngrok.connect(port).public_url
             print("\n" + "=" * 60)
-            print(f"🚀 * NGROK TUNNEL ACTIVE *")
+            print("🚀 * NGROK TUNNEL ACTIVE *")
             print(f"🌐 Public URL: {public_url}")
             print(f"💻 Local URL:  http://127.0.0.1:{port}")
             print("=" * 60 + "\n")
         except Exception as e:
-            print(f"⚠️ Ngrok error: {e}")
-            print("Running in local-only mode.")
+            print("\n" + "=" * 60)
+            print("⚠️ Ngrok Tunnel Notice:")
+            print(f"   {e}")
+            print("💡 Tip: Ngrok requires a free auth token to create tunnels.")
+            print("   1. Sign up for free: https://dashboard.ngrok.com/signup")
+            print("   2. Copy your authtoken: https://dashboard.ngrok.com/get-started/your-authtoken")
+            print("   3. Add to your .env file: NGROK_AUTHTOKEN=your_token_here")
+            print("=" * 60 + "\n")
+            print("Continuing in local-only mode.")
+
     debug_mode = os.environ.get("FLASK_ENV") == "development" or os.environ.get("DEBUG", "").lower() in ("true", "1")
     app.run(host="0.0.0.0", port=port, debug=debug_mode)
