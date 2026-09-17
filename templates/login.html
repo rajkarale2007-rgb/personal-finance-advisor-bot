@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Personal Finance Advisor Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+
+    <div class="auth-wrapper">
+
+        <!-- Demo Account Card -->
+        <div class="demo-card">
+            <div class="demo-header">
+                <span class="demo-icon">👤</span>
+                <div>
+                    <h3>Demo Account</h3>
+                    <p>Try the app instantly with pre-loaded data</p>
+                </div>
+            </div>
+
+            <div class="demo-credentials">
+                <div class="demo-field">
+                    <span class="demo-label">Username</span>
+                    <span class="demo-value" id="demoUsername">johndoe</span>
+                </div>
+                <div class="demo-field">
+                    <span class="demo-label">Password</span>
+                    <span class="demo-value" id="demoPassword">Password123!</span>
+                </div>
+            </div>
+
+            <button class="btn btn-demo" onclick="fillDemoCredentials()">
+                Use Demo Account
+            </button>
+
+            <div class="demo-data-preview">
+                <p class="demo-preview-title">Pre-loaded with:</p>
+                <ul class="demo-preview-list">
+                    <li>📊 2 income streams (Salary + Freelance)</li>
+                    <li>💳 7 categorized expense transactions</li>
+                    <li>🎯 2 active savings goals with progress</li>
+                    <li>💡 AI-generated financial insights</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Login Card -->
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-icon">💰</div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to your Personal Finance Advisor</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST" class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" name="username" placeholder="e.g. johndoe" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="{{ url_for('register') }}">Create an account</a></p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function fillDemoCredentials() {
+            document.getElementById('username').value = 'johndoe';
+            document.getElementById('password').value = 'Password123!';
+            // Auto-submit after a short visual delay
+            setTimeout(() => {
+                document.getElementById('loginForm').submit();
+            }, 300);
+        }
+    </script>
+
+</body>
+</html>

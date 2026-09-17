@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Personal Finance Advisor Bot</title>
+    <!-- Google Fonts & Chart.js CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-navbar">
+            <div class="nav-brand">
+                <span class="nav-icon">📊</span>
+                <span class="brand-name">Personal Finance Advisor Bot</span>
+            </div>
+            <div class="nav-controls">
+                <div class="user-badge">
+                    <span class="user-avatar">{{ user.username[0].upper() }}</span>
+                    <span class="user-name">{{ user.username }}</span>
+                </div>
+                <button id="exportCsvBtn" class="btn btn-outline" title="Export monthly summary to CSV">
+                    📥 Export CSV
+                </button>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout" title="Sign Out">Sign Out</a>
+            </div>
+        </nav>
+
+        <!-- Header Controls -->
+        <header class="app-header">
+            <div>
+                <h1>Financial Dashboard</h1>
+                <p>Track multi-source income, control categorized spending, and grow your savings with AI advice.</p>
+            </div>
+            <div class="month-selector-wrapper">
+                <label for="monthPicker">Active Month:</label>
+                <input type="month" id="monthPicker">
+            </div>
+        </header>
+
+        <!-- Metric Summary Cards -->
+        <section class="metrics-grid">
+            <div class="card metric-card">
+                <div class="metric-icon">💰</div>
+                <div>
+                    <h3>Total Income</h3>
+                    <p id="totalIncome" class="amount income-text">$0.00</p>
+                </div>
+            </div>
+            <div class="card metric-card">
+                <div class="metric-icon">💳</div>
+                <div>
+                    <h3>Total Expenses</h3>
+                    <p id="totalExpenses" class="amount expense-text">$0.00</p>
+                </div>
+            </div>
+            <div class="card metric-card">
+                <div class="metric-icon">🌱</div>
+                <div>
+                    <h3>Net Savings</h3>
+                    <p id="netSavings" class="amount savings-text">$0.00</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Workspace Grid -->
+        <div class="workspace-grid">
+            
+            <!-- Left Column: Forms & AI Insights -->
+            <div class="column">
+                <!-- Expense Form Card -->
+                <div class="card">
+                    <h2>Log New Expense</h2>
+                    <form id="expenseForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseCategory">Category</label>
+                                <select id="expenseCategory" required>
+                                    <option value="Rent">Rent & Housing</option>
+                                    <option value="Food">Food & Groceries</option>
+                                    <option value="Transport">Transport & Commute</option>
+                                    <option value="Utilities">Utilities & Bills</option>
+                                    <option value="Entertainment">Entertainment & Leisure</option>
+                                    <option value="Healthcare">Healthcare & Wellness</option>
+                                    <option value="Education">Education & Learning</option>
+                                    <option value="Other">Other Expenses</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseAmount">Amount ($)</label>
+                                <input type="number" id="expenseAmount" step="0.01" placeholder="e.g. 45.50" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expenseDate">Date</label>
+                                <input type="date" id="expenseDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseDescription">Description (Optional)</label>
+                                <input type="text" id="expenseDescription" placeholder="e.g. Weekly grocery run">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Log Expense</button>
+                    </form>
+                </div>
+
+                <!-- Multi-Source Income Card -->
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h2>Record Income Stream</h2>
+                        <span class="badge">Multi-Source</span>
+                    </div>
+                    <form id="incomeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="incomeSource">Source / Client Name</label>
+                                <input type="text" id="incomeSource" placeholder="e.g. Salary, Client X, Freelance" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="incomeAmount">Amount ($)</label>
+                                <input type="number" id="incomeAmount" step="0.01" placeholder="e.g. 3500.00" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="incomeDate">Date Received</label>
+                            <input type="date" id="incomeDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Income Stream</button>
+                    </form>
+
+                    <!-- Monthly Income Streams List -->
+                    <div class="stream-container">
+                        <h4 class="subheading">Logged Incomes This Month</h4>
+                        <div id="incomeStreamsList" class="item-list">
+                            <p class="text-muted">No income streams logged yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goal-Based Savings Tracker Card -->
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h2>🎯 Savings Goals</h2>
+                        <button id="toggleGoalFormBtn" class="btn btn-sm btn-outline">+ New Goal</button>
+                    </div>
+
+                    <!-- Add Goal Collapsible Form -->
+                    <form id="goalForm" class="hidden-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="goalName">Goal Name</label>
+                                <input type="text" id="goalName" placeholder="e.g. Emergency Fund" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="goalTarget">Target Amount ($)</label>
+                                <input type="number" id="goalTarget" step="0.01" placeholder="e.g. 5000" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="goalDeadline">Target Date (Optional)</label>
+                            <input type="date" id="goalDeadline">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Goal</button>
+                    </form>
+
+                    <!-- Active Goals List with Progress Bars -->
+                    <div id="goalsContainer" class="goals-container">
+                        <p class="text-muted">No savings goals created yet. Set a target to build financial momentum!</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Chart, Insights & Transactions -->
+            <div class="column">
+                
+                <!-- AI Insights Card -->
+                <div class="card insights-card">
+                    <div class="card-header-flex">
+                        <h2>💡 Financial Insights & Recommendations</h2>
+                        <span id="aiEngineBadge" class="badge badge-local">Local Advisor AI</span>
+                    </div>
+                    <ul id="insightsList">
+                        <li>Loading insights...</li>
+                    </ul>
+                </div>
+
+                <!-- Spending Chart Card -->
+                <div class="card">
+                    <h2>Spending Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Transaction History Card -->
+                <div class="card">
+                    <h2>Expense Transactions</h2>
+                    <div class="table-responsive">
+                        <table id="transactionTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center">No transactions recorded for this month.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Contribute Modal -->
+    <div id="contributeModal" class="modal">
+        <div class="modal-content card">
+            <h3 id="modalGoalTitle">Contribute to Goal</h3>
+            <p class="text-muted" id="modalGoalSubtitle">Add savings to reach your target faster.</p>
+            <div class="form-group">
+                <label for="contributeAmount">Contribution Amount ($)</label>
+                <input type="number" id="contributeAmount" step="0.01" placeholder="e.g. 100" min="1" required>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelContributeBtn" class="btn btn-secondary">Cancel</button>
+                <button id="confirmContributeBtn" class="btn btn-primary">Confirm Contribution</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

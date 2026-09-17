@@ -1,0 +1,64 @@
+============================================================
+  PERSONAL FINANCE ADVISOR BOT - DEMO ACCOUNT CREDENTIALS
+============================================================
+
+Application URL : http://127.0.0.1:5000
+Start Command   : python app.py
+
+------------------------------------------------------------
+  DEMO USER ACCOUNT: John Doe
+------------------------------------------------------------
+
+  Username  : johndoe
+  Email     : johndoe@example.com
+  Password  : Password123!
+
+------------------------------------------------------------
+  PRE-LOADED SAMPLE DATA (September 2026)
+------------------------------------------------------------
+
+  INCOME STREAMS:
+    - Primary Tech Salary         $4,500.00   (Sep 1)
+    - Freelance UI Consulting     $1,200.00   (Sep 12)
+    ─────────────────────────────────────────
+      Total Income                $5,700.00
+
+  EXPENSES:
+    - Rent & Housing              $1,400.00   Monthly apartment rent
+    - Food & Groceries              $480.00   Weekly supermarket groceries
+    - Transport & Commute           $160.00   Monthly transit pass & fuel
+    - Utilities & Bills             $210.00   Internet & electric bill
+    - Entertainment & Leisure       $140.00   Weekend dining & movies
+    - Healthcare & Wellness          $95.00   Gym membership
+    - Other Expenses                 $55.00   Home supplies
+    ─────────────────────────────────────────
+      Total Expenses              $2,540.00
+
+  NET SAVINGS                     $3,160.00  (55.4% savings rate)
+
+  ACTIVE SAVINGS GOALS:
+    - Emergency Fund    $3,500 / $6,000  (58.3% complete)
+    - New Work Laptop   $1,200 / $1,800  (66.7% complete)
+
+------------------------------------------------------------
+  AI ENGINE (No API Key Required)
+------------------------------------------------------------
+
+  Running with built-in Local Advisor AI (Offline Model).
+  To activate Gemini Cloud AI, add your API key to .env:
+    GEMINI_API_KEY=your_api_key_here
+
+------------------------------------------------------------
+  FEATURES TO EXPLORE
+------------------------------------------------------------
+
+  1. View the dashboard with income, expenses & savings
+  2. Add a new expense or income stream
+  3. Contribute funds to the savings goals
+  4. Check AI-generated financial insights (right panel)
+  5. Export a CSV financial summary report (top-right button)
+  6. Change the Active Month to browse different periods
+  7. Sign out and register a new account to test isolation
+
+============================================================
+
