@@ -35,7 +35,10 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "finance-advisor-secret-key-change-in-prod"
 )
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finance.db"
+database_url = os.environ.get("DATABASE_URL", "sqlite:///finance.db")
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize Database & Login Manager
@@ -574,5 +577,5 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"⚠️ Ngrok error: {e}")
             print("Running in local-only mode.")
-
-    app.run(debug=True, port=port)
+    debug_mode = os.environ.get("FLASK_ENV") == "development" or os.environ.get("DEBUG", "").lower() in ("true", "1")
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)
