@@ -3,6 +3,15 @@ import io
 import csv
 import os
 import sys
+
+# Ensure UTF-8 output encoding on Windows terminals
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -636,15 +645,15 @@ if __name__ == "__main__":
             # Open HTTP tunnel on port 5000
             public_url = ngrok.connect(port).public_url
             print("\n" + "=" * 60)
-            print("🚀 * NGROK TUNNEL ACTIVE *")
-            print(f"🌐 Public URL: {public_url}")
-            print(f"💻 Local URL:  http://127.0.0.1:{port}")
+            print(">>> NGROK TUNNEL ACTIVE <<<")
+            print(f"[*] Public URL: {public_url}")
+            print(f"[*] Local URL:  http://127.0.0.1:{port}")
             print("=" * 60 + "\n")
         except Exception as e:
             print("\n" + "=" * 60)
-            print("⚠️ Ngrok Tunnel Notice:")
+            print("[!] Ngrok Tunnel Notice:")
             print(f"   {e}")
-            print("💡 Tip: Ngrok requires a free auth token to create tunnels.")
+            print("[*] Tip: Ngrok requires a free auth token to create tunnels.")
             print("   1. Sign up for free: https://dashboard.ngrok.com/signup")
             print("   2. Copy your authtoken: https://dashboard.ngrok.com/get-started/your-authtoken")
             print("   3. Add to your .env file: NGROK_AUTHTOKEN=your_token_here")
