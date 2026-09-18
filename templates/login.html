@@ -11,20 +11,28 @@
 
     <div class="auth-wrapper">
 
-        <!-- Demo Account Card -->
+        <!-- Example Account Card -->
         <div class="demo-card">
             <div class="demo-header">
                 <span class="demo-icon">👤</span>
                 <div>
-                    <h3>Demo Account</h3>
-                    <p>Try the app instantly with pre-loaded data</p>
+                    <h3>Example Account</h3>
+                    <p>Sample login info to test the dashboard</p>
                 </div>
             </div>
 
             <div class="demo-credentials">
                 <div class="demo-field">
+                    <span class="demo-label">Full Name</span>
+                    <span class="demo-value">John Doe</span>
+                </div>
+                <div class="demo-field">
                     <span class="demo-label">Username</span>
                     <span class="demo-value" id="demoUsername">johndoe</span>
+                </div>
+                <div class="demo-field">
+                    <span class="demo-label">Email</span>
+                    <span class="demo-value" id="demoEmail">johndoe@example.com</span>
                 </div>
                 <div class="demo-field">
                     <span class="demo-label">Password</span>
@@ -32,9 +40,11 @@
                 </div>
             </div>
 
-            <button class="btn btn-demo" onclick="fillDemoCredentials()">
-                Use Demo Account
-            </button>
+            <div class="demo-note">
+                <p class="demo-note-text">
+                    💡 <strong>Example Credentials:</strong> Enter the username/email and password above into the sign-in form to explore John Doe's pre-loaded dashboard.
+                </p>
+            </div>
 
             <div class="demo-data-preview">
                 <p class="demo-preview-title">Pre-loaded with:</p>
@@ -83,17 +93,6 @@
         </div>
 
     </div>
-
-    <script>
-        function fillDemoCredentials() {
-            document.getElementById('username').value = 'johndoe';
-            document.getElementById('password').value = 'Password123!';
-            // Auto-submit after a short visual delay
-            setTimeout(() => {
-                document.getElementById('loginForm').submit();
-            }, 300);
-        }
-    </script>
 
 </body>
 </html>

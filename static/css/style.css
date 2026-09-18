@@ -160,6 +160,21 @@ body {
     background: var(--primary-hover);
 }
 
+.demo-note {
+    background: #e0f2fe;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.demo-note-text {
+    font-size: 0.8rem;
+    color: #0369a1;
+    line-height: 1.45;
+    margin: 0;
+}
+
 .demo-data-preview {
     border-top: 1px solid #bfdbfe;
     padding-top: 1rem;

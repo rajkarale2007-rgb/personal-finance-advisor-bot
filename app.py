@@ -33,6 +33,8 @@ from flask_login import (
     current_user,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 import google.generativeai as genai
 from local_advisor import local_model
 
@@ -83,10 +85,16 @@ class User(UserMixin, db.Model):
     expenses = db.relationship("Expense", backref="user", lazy=True, cascade="all, delete-orphan")
     goals = db.relationship("Goal", backref="user", lazy=True, cascade="all, delete-orphan")
 
-    def set_password(self, password):
+    def __init__(self, username: str, email: str, password_hash: str = "", gemini_api_key: str | None = None):
+        self.username = username
+        self.email = email
+        self.password_hash = password_hash
+        self.gemini_api_key = gemini_api_key
+
+    def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
 
@@ -100,6 +108,13 @@ class Income(db.Model):
     date = db.Column(db.String(10), nullable=False)  # Format: 'YYYY-MM-DD'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __init__(self, user_id: int, month: str, amount: float, date: str, source: str = "Primary Income"):
+        self.user_id = user_id
+        self.month = month
+        self.source = source
+        self.amount = amount
+        self.date = date
+
 
 class Expense(db.Model):
     __tablename__ = "expenses"
@@ -112,6 +127,14 @@ class Expense(db.Model):
     date = db.Column(db.String(10), nullable=False)  # Format: 'YYYY-MM-DD'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __init__(self, user_id: int, month: str, category: str, amount: float, date: str, description: str = ""):
+        self.user_id = user_id
+        self.month = month
+        self.category = category
+        self.amount = amount
+        self.description = description
+        self.date = date
+
 
 class Goal(db.Model):
     __tablename__ = "goals"
@@ -123,10 +146,17 @@ class Goal(db.Model):
     deadline = db.Column(db.String(10), nullable=True)  # Format: 'YYYY-MM-DD'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def __init__(self, user_id: int, name: str, target_amount: float, current_amount: float = 0.0, deadline: str | None = None):
+        self.user_id = user_id
+        self.name = name
+        self.target_amount = target_amount
+        self.current_amount = current_amount
+        self.deadline = deadline
+
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 
 # Create database tables and perform lightweight auto-migration
@@ -643,7 +673,7 @@ if __name__ == "__main__":
             if auth_token:
                 ngrok.set_auth_token(auth_token.strip())
             # Open HTTP tunnel on port 5000
-            public_url = ngrok.connect(port).public_url
+            public_url = ngrok.connect(addr=str(port)).public_url
             print("\n" + "=" * 60)
             print(">>> NGROK TUNNEL ACTIVE <<<")
             print(f"[*] Public URL: {public_url}")

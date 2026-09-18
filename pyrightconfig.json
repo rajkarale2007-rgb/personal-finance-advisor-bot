@@ -1,0 +1,11 @@
+{
+  "include": ["."],
+  "exclude": ["__pycache__", ".git"],
+  "reportMissingImports": false,
+  "reportPrivateImportUsage": false,
+  "reportAttributeAccessIssue": false,
+  "reportCallIssue": false,
+  "reportArgumentType": false,
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "off"
+}
